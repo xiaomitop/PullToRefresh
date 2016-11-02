@@ -11,11 +11,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#303030">
+        <com.yt.pulltorefresh.recyclerview.RefreshRecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/background_light" />
         <android.support.v7.widget.RecyclerView
             android:id="@+id/home_page_recyclerview"
             android:background="@android:color/background_light"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:visibility="gone"/>
+
     </com.yt.pulltorefresh.view.RefreshLayout>
 
 </RelativeLayout>

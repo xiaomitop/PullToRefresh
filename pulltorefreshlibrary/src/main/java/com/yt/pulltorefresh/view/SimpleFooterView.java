@@ -1,30 +1,26 @@
 package com.yt.pulltorefresh.view;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.yt.pulltorefresh.R;
 import com.yt.pulltorefresh.i.IRefreshFooter;
+import com.yt.pulltorefresh.i.callback.OnClickToLoadMoreListener;
 
 /**
  * 功能：
  * 作者：yangtao
  * 创建时间：2016/10/28 10:05
  */
-public class SimpleFooterView extends FrameLayout implements IRefreshFooter {
-
-    private RelativeLayout relativeLayout;
+public class SimpleFooterView extends FrameLayout implements IRefreshFooter, View.OnClickListener {
+    private boolean isLoading = false;
     private TextView text;
     private ProgressBar progressBar;
-    private View successIcon;
-
+    private OnClickToLoadMoreListener clickToLoadMoreListener;
 
     public SimpleFooterView(Context context) {
         super(context);
@@ -41,36 +37,17 @@ public class SimpleFooterView extends FrameLayout implements IRefreshFooter {
         init(context);
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public SimpleFooterView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        init(context);
-    }
-
     private void init(Context context) {
         inflate(context, R.layout.simple_footer, this);
-        relativeLayout = (RelativeLayout) findViewById(R.id.relativeLayout);
         text = (TextView) findViewById(R.id.text);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        successIcon = findViewById(R.id.successIcon);
-    }
-
-    @Override
-    public void reset() {
-        if (relativeLayout != null && relativeLayout.getVisibility() == View.VISIBLE){
-            relativeLayout.setVisibility(View.GONE);
-        }
+        this.setOnClickListener(this);
     }
 
     @Override
     public void refreshing() {
-        if (relativeLayout != null && relativeLayout.getVisibility() == View.GONE){
-            relativeLayout.setVisibility(View.VISIBLE);
-        }
-        if (successIcon != null && successIcon.getVisibility() == View.VISIBLE) {
-            successIcon.setVisibility(INVISIBLE);
-        }
-        if (progressBar != null && progressBar.getVisibility() == View.INVISIBLE){
+        isLoading = true;
+        if (progressBar != null && progressBar.getVisibility() == View.INVISIBLE) {
             progressBar.setVisibility(VISIBLE);
         }
         text.setText(getResources().getText(R.string.header_refreshing));
@@ -78,15 +55,34 @@ public class SimpleFooterView extends FrameLayout implements IRefreshFooter {
 
     @Override
     public void complete() {
-        if (relativeLayout != null && relativeLayout.getVisibility() == View.GONE){
-            relativeLayout.setVisibility(View.VISIBLE);
-        }
-        if (successIcon != null && successIcon.getVisibility() == View.INVISIBLE) {
-            successIcon.setVisibility(VISIBLE);
-        }
-        if (progressBar != null && progressBar.getVisibility() == View.VISIBLE){
+        onWaitToLoadMore();
+    }
+
+    @Override
+    public void onWaitToLoadMore() {
+        isLoading = false;
+        if (progressBar != null && progressBar.getVisibility() == View.VISIBLE) {
             progressBar.setVisibility(INVISIBLE);
         }
-        text.setText(getResources().getText(R.string.header_completed));
+        text.setText(getResources().getText(R.string.click_to_load_more));
+    }
+
+    @Override
+    public boolean isLoading() {
+        return isLoading;
+    }
+
+    @Override
+    public void setClickToLoadMoreListener(OnClickToLoadMoreListener clickToLoadMoreListener) {
+        this.clickToLoadMoreListener = clickToLoadMoreListener;
+    }
+
+    @Override
+    public void onClick(View view) {
+        if (text.getText().toString().equals(getResources().getText(R.string.click_to_load_more))) {
+            if (clickToLoadMoreListener != null) {
+                clickToLoadMoreListener.clickToLoadMore();
+            }
+        }
     }
 }

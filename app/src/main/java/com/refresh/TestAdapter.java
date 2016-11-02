@@ -44,7 +44,7 @@ public class TestAdapter extends RefreshRecyclerAdapter<String>{
     @Override
     public void bindData(BaseAdapterHelper helper, int position, String item) {
         Glide.with(context)
-                .load(imgUrls[position % imgUrls.length])
+                .load(item)
                 .into((ImageView) helper.getView(R.id.homepage_grid_picpic));
     }
 }

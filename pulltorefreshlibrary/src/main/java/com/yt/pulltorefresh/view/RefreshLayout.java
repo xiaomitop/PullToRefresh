@@ -13,6 +13,7 @@ import android.widget.AbsListView;
 import android.widget.Scroller;
 
 import com.yt.pulltorefresh.i.IRefreshHeader;
+import com.yt.pulltorefresh.i.callback.OnRefreshListener;
 import com.yt.pulltorefresh.utils.State;
 
 public class RefreshLayout extends ViewGroup {
@@ -497,9 +498,5 @@ public class RefreshLayout extends ViewGroup {
             }
             finishSpinner();
         }
-    }
-
-    public interface OnRefreshListener {
-        void onRefresh();
     }
 }

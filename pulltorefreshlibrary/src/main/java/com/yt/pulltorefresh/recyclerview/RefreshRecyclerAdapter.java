@@ -2,12 +2,12 @@ package com.yt.pulltorefresh.recyclerview;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.yt.pulltorefresh.i.I_Adapter;
 import com.yt.pulltorefresh.i.I_Data;
-import com.yt.pulltorefresh.view.SimpleFooterView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,14 +17,14 @@ import java.util.List;
  * 作者：yangtao
  * 创建时间：2016/10/28 16:34
  */
-public abstract class RefreshRecyclerAdapter<T> extends RecyclerView.Adapter<RecyclerView.ViewHolder>
+public abstract class RefreshRecyclerAdapter<T> extends RecyclerView.Adapter<ViewHolder>
         implements I_Data<T>, I_Adapter<T> {
     private final int NORMALLAYOUT = 0;
     private final int FOOTERLAYOUT = 1;
     protected final Context context;
     protected final List<T> data;
     protected final int layoutResId;
-    public SimpleFooterHolder simpleFooterHolder;
+    private View footerView;
 
     public abstract int getItemLayoutId();
 
@@ -35,19 +35,18 @@ public abstract class RefreshRecyclerAdapter<T> extends RecyclerView.Adapter<Rec
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType == NORMALLAYOUT) {
             final BaseAdapterHelper helper = BaseAdapterHelper.get(context, null, parent, layoutResId, -1);
             return new RecyclerViewHolder(helper.getView(), helper);
         } else {
-            simpleFooterHolder = new SimpleFooterHolder(new SimpleFooterView(context));
-            return  simpleFooterHolder;
+            return new SimpleFooterHolder(footerView);
         }
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(ViewHolder holder, int position) {
         if (holder instanceof SimpleFooterHolder) {
             return;
         }
@@ -113,13 +112,17 @@ public abstract class RefreshRecyclerAdapter<T> extends RecyclerView.Adapter<Rec
     }
 
     public interface OnItemClickListener {
-        void onItemClick(RecyclerView.ViewHolder viewHolder, View view, int position);
+        void onItemClick(ViewHolder viewHolder, View view, int position);
     }
 
     public interface OnItemLongClickListener {
-        void onItemLongClick(RecyclerView.ViewHolder viewHolder, View view, int position);
+        void onItemLongClick(ViewHolder viewHolder, View view, int position);
     }
 
+
+    public void addFooterView(View view){
+        footerView = view;
+    }
 
     @Override
     public void add(T elem) {

@@ -4,140 +4,77 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.View;
 
-import com.yt.pulltorefresh.utils.State;
+import com.yt.pulltorefresh.i.callback.OnLoadingListener;
+import com.yt.pulltorefresh.i.callback.OnRefreshListener;
+import com.yt.pulltorefresh.recyclerview.RefreshRecyclerView;
+import com.yt.pulltorefresh.view.RefreshLayout;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
-    private RecyclerView mRecyclerView;
-    //private GridAdapter_Redu gridReDuAdapter;
     private TestAdapter testAdapter;
-    // 服务器端一共多少条数据
-    private static final int TOTAL_COUNTER = 50;
-    // 每一页展示多少条数据
-    private static final int REQUEST_COUNT = 12;
-    // 已经获取到多少条数据了
-    private int mCurrentCounter = 0;
-    //模拟的数据源
-    private ArrayList<String> dataList;
-
-    protected State mState = State.RESET;
-    protected void setState(State mState) {
-        this.mState = mState;
-        this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                changeAdaperState();
-            }
-        });
-    }
-    //改变底部bottom的样式
-    protected void changeAdaperState() {
-        /*if (gridReDuAdapter != null && gridReDuAdapter.mFooterHolder != null) {
-            gridReDuAdapter.mFooterHolder.setData(mState);
-        }*/
-        if (testAdapter != null && testAdapter.simpleFooterHolder != null) {
-            testAdapter.simpleFooterHolder.setData(mState);
-        }
-    }
+    private RefreshRecyclerView recyclerView;
+    public String[] imgUrls = {
+            "http://img5.duitang.com/uploads/item/201402/22/20140222113830_X3ddd.jpeg",
+            "http://v1.qzone.cc/avatar/201403/01/10/36/531147afa4197738.jpg!200x200.jpg",
+            "http://g.hiphotos.baidu.com/zhidao/wh%3D450%2C600/sign=e4d7ed147af40ad115b1cfe7621c3de9/b7fd5266d016092445b47837d50735fae6cd340d.jpg",
+            "http://img5q.duitang.com/uploads/item/201502/19/20150219182507_vGVaK.jpeg",
+            "http://p1.qqyou.com/touxiang/uploadpic/2013-3/12/2013031212190118646.jpg",
+            "http://img5.duitang.com/uploads/item/201412/08/20141208221323_YVJFk.png",
+            "http://cdn.duitang.com/uploads/item/201408/02/20140802222651_GWuU2.png",
+            "http://ent.dzwww.com/yulezhuanti/mtcbg/201510/W020151027467479100669.jpg",
+            "http://p1.qqyou.com/touxiang/uploadpic/2013-3/10/2013031009323656495.jpg",
+            "http://p1.qqyou.com/touxiang/uploadpic/2013-3/12/2013031212295986807.jpg",
+            "http://f.hiphotos.baidu.com/zhidao/wh%3D600%2C800/sign=10742594d739b6004d9b07b1d9601912/9f2f070828381f30ec9eabdeab014c086f06f0c5.jpg",
+            "http://a.hiphotos.baidu.com/zhidao/wh%3D600%2C800/sign=5bda8a18a71ea8d38a777c02a73a1c76/5882b2b7d0a20cf4598dc37c77094b36acaf9977.jpg",
+            "http://a1.att.hudong.com/36/98/300001051406133039983418031.jpg"
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mRecyclerView = (RecyclerView) findViewById(R.id.home_page_recyclerview);
+        final RefreshLayout refreshLayout = (RefreshLayout) findViewById(R.id.refreshLayout);
+        if (refreshLayout != null) {
+            // 刷新状态的回调
+            refreshLayout.setRefreshListener(new OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    // 延迟3秒后刷新成功
+                    refreshLayout.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            refreshLayout.refreshComplete();
+                        }
+                    }, 3000);
+                }
+            });
+        }
+        //refreshLayout.autoRefresh();
         initGridView();
     }
 
-    private View initGridView() {
-        mRecyclerView.setHasFixedSize(true);
-        //滑动暂停加载网络图片,而且可以监听recycler是否滑动到底部
-        mRecyclerView.addOnScrollListener(mOnScrollListener);
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        //gridReDuAdapter = new GridAdapter_Redu(MainActivity.this);
-        testAdapter = new TestAdapter(MainActivity.this, getRemoteData());
-        //gridReDuAdapter.addAll(getRemoteData());
-        mRecyclerView.setAdapter(testAdapter);
+    private void initGridView() {
+        recyclerView = (RefreshRecyclerView) findViewById(R.id.recyclerView);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        testAdapter = new TestAdapter(MainActivity.this, Arrays.asList(imgUrls));
         GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
-        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+        recyclerView.setAdapter(testAdapter);
+        recyclerView.setOnLoadingListener(new OnLoadingListener() {
             @Override
-            public int getSpanSize(int position) {
-                //如果是最后一个item，则设置占据3列，否则占据1列
-                boolean isFooter = position == testAdapter.getItemCount() - 1;
-                return isFooter ? 2 : 1;
+            public void loading() {
+                // 延迟3秒后刷新成功
+                recyclerView.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        recyclerView.complete();
+                        testAdapter.addAll(Arrays.asList(imgUrls));
+                    }
+                }, 3000);
             }
         });
-        mRecyclerView.setLayoutManager(layoutManager);
-        return mRecyclerView;
+        recyclerView.setLayoutManager(layoutManager);
     }
-
-    private EndlessRecyclerOnScrollListener mOnScrollListener = new EndlessRecyclerOnScrollListener() {
-        @Override
-        public void onLoadNextPage(View view) {
-            super.onLoadNextPage(view);
-
-            if (mState == State.LOADING) {
-                Log.d("@TAG", "the state is Loading, just wait..");
-                return;
-            }
-
-            if (mCurrentCounter < TOTAL_COUNTER) {
-                // loading more
-                requestData();
-                Log.d("TAG", "请求数据");
-            } else {
-                //the end
-                setState(State.RESET);
-            }
-        }
-    };
-
-
-    /**
-     * 模拟请求网络
-     */
-    private void requestData() {
-        setState(State.LOADING);
-        new Thread() {
-            @Override
-            public void run() {
-                super.run();
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                //模拟请求远程数据
-                testAdapter.addAll(getRemoteData());
-                //加载完毕时
-                setState(com.yt.pulltorefresh.utils.State.COMPLETE);
-                Log.d("TAG", mCurrentCounter + "");
-
-            }
-        }.start();
-    }
-
-    //模拟请求数据
-    private ArrayList<String> getRemoteData() {
-        if (dataList == null)
-            dataList = new ArrayList<>();
-        //每次都清空一下
-        dataList.clear();
-        //要减去adapter最后一页
-        for (int i = 0; i < REQUEST_COUNT; i++) {
-            if (dataList.size() + mCurrentCounter >= TOTAL_COUNTER) {
-                break;
-            }
-            dataList.add("账号" + (mCurrentCounter + i));
-        }
-        mCurrentCounter += dataList.size();
-        return dataList;
-    }
-
 }
